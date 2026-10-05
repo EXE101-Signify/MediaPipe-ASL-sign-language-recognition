@@ -1,0 +1,141 @@
+# =========================
+# Python
+# =========================
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# =========================
+# Environment / Secrets
+# =========================
+
+.env
+.env.*
+!.env.example
+
+# =========================
+# IDE / Editors
+# =========================
+
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# OS
+# =========================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs
+# =========================
+
+*.log
+logs/
+
+# =========================
+# Testing / Coverage
+# =========================
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache/
+
+# =========================
+# Type checking / linting
+# =========================
+
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# =========================
+# Jupyter
+# =========================
+
+.ipynb_checkpoints/
+
+# =========================
+# Machine Learning
+# =========================
+
+# Model checkpoints
+checkpoints/
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.h5
+*.keras
+*.safetensors
+
+# Training outputs
+runs/
+outputs/
+wandb/
+mlruns/
+
+# TensorBoard
+tensorboard/
+logs/
+
+# =========================
+# Dataset
+# =========================
+
+# Ignore large datasets
+data/
+datasets/
+raw_data/
+processed_data/
+
+# If you want to commit dataset metadata
+# keep only small metadata files:
+# !data/*.json
+# !data/*.csv
+
+# =========================
+# Temporary files
+# =========================
+
+tmp/
+temp/
+*.tmp
+
+# =========================
+# Python tools
+# =========================
+
+.pytest_cache/
+.pyre/
+.ruff_cache/
+
+# =========================
+# Local configuration
+# =========================
+
+*.local
+config.local.*
