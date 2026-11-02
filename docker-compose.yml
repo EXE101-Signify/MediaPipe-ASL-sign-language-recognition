@@ -1,0 +1,28 @@
+services:
+  signify-python:
+    image: ${SIGNIFY_PYTHON_IMAGE:?Set SIGNIFY_PYTHON_IMAGE to the Docker Hub image and tag}
+    restart: unless-stopped
+    expose:
+      - "8000"
+    networks:
+      signify-private:
+        aliases:
+          - signify-python
+    volumes:
+      - type: bind
+        source: ${SIGNIFY_MODEL_PATH:-/opt/signify/models/asl_cnn_model.onnx}
+        target: /app/asl_cnn_model.onnx
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).close()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 45s
+      retries: 3
+
+networks:
+  signify-private:
+    external: true
+    name: signify-private

@@ -10,7 +10,7 @@ opencv-python
 
 # 1.0 deleted the mediapipe.solutions API that the Hands detector lives in, with no
 # drop-in replacement, so this upper bound is load-bearing rather than precautionary.
-mediapipe>=0.10.21,<1.0
+mediapipe==0.10.21
 
 # Required by mediapipe 0.10 itself.
 numpy<2
