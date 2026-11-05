@@ -4,9 +4,10 @@ Run ``python api.py`` and send an image as multipart form field ``image``.
 """
 
 import argparse
+import logging
 from pathlib import Path
 from threading import Lock
-from time import time_ns
+from time import monotonic_ns, time_ns
 
 import cv2
 from flask import Flask, jsonify, request
@@ -20,6 +21,7 @@ from realtime_translator import COMMIT_CONFIDENCE
 
 ROOT = Path(__file__).resolve().parent
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
+logger = logging.getLogger(__name__)
 
 
 class InferenceService:
@@ -82,11 +84,29 @@ def create_app(inference=None):
         data = uploaded.read()
         if not data:
             return jsonify(error="Invalid image"), 400
-        image = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
+        decode_started = monotonic_ns()
+        try:
+            image = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
+        finally:
+            decode_ms = (monotonic_ns() - decode_started) / 1_000_000
         if image is None or image.size == 0:
+            logger.info("ai_prediction decode_ms=%.3f inference_ms=0 outcome=invalid_image", decode_ms)
             return jsonify(error="Invalid image"), 400
 
-        result = service.predict(image)
+        inference_started = monotonic_ns()
+        outcome = "error"
+        try:
+            result = service.predict(image)
+            if result is None:
+                outcome = "no_hand"
+            elif result[1] < COMMIT_CONFIDENCE:
+                outcome = "low_confidence"
+            else:
+                outcome = "success"
+        finally:
+            inference_ms = (monotonic_ns() - inference_started) / 1_000_000
+            logger.info("ai_prediction decode_ms=%.3f inference_ms=%.3f outcome=%s",
+                        decode_ms, inference_ms, outcome)
         if result is None:
             return jsonify(error="No hand detected"), 422
         letter, confidence = result
