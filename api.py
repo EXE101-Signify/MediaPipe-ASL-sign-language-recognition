@@ -71,6 +71,20 @@ def create_app(inference=None):
     app.config["MAX_CONTENT_LENGTH"] = MAX_IMAGE_BYTES
     service = inference if inference is not None else InferenceService()
 
+    # The MVP frontend calls this local service directly from Vite.
+    # No credentials are sent to this service, so a wildcard origin is enough
+    # for local browser development and avoids a preflight/CORS failure.
+    @app.after_request
+    def allow_local_frontend(response):
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-MVP-Direct"
+        return response
+
+    @app.route("/api/v1/predict", methods=["OPTIONS"])
+    def predict_options():
+        return "", 204
+
     @app.get("/health")
     def health():
         return jsonify(status="ok")
@@ -111,6 +125,12 @@ def create_app(inference=None):
             return jsonify(error="No hand detected"), 422
         letter, confidence = result
         if confidence < COMMIT_CONFIDENCE:
+            # Local MVP mode lets the browser display the model's best guess
+            # even when it does not pass the production commit threshold.
+            # The normal backend-to-AI contract keeps the original 422 gate.
+            if request.headers.get("X-MVP-Direct", "").lower() == "true":
+                return jsonify(letter=letter, confidence=confidence,
+                               timestamp=time_ns() // 1_000_000, accepted=False)
             return jsonify(error="Low confidence", confidence=confidence), 422
         return jsonify(letter=letter, confidence=confidence, timestamp=time_ns() // 1_000_000)
 
